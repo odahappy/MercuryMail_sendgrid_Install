@@ -1,0 +1,702 @@
+/* MercuryMail 全局设计系统 — 仅视觉层，不影响业务逻辑 */
+
+:root {
+  --mm-primary: #0c8ee6;
+  --mm-primary-hover: #0a7acc;
+  --mm-primary-soft: rgba(12, 142, 230, 0.1);
+  --mm-accent: #06b6d4;
+  --mm-success: #10b981;
+  --mm-warning: #f59e0b;
+  --mm-danger: #ef4444;
+  --mm-bg: #f0f4f8;
+  --mm-bg-subtle: #e8eef5;
+  --mm-surface: #ffffff;
+  --mm-sidebar-bg: #0b1120;
+  --mm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --mm-sidebar-active: rgba(12, 142, 230, 0.18);
+  --mm-text: #0f172a;
+  --mm-text-secondary: #64748b;
+  --mm-border: rgba(15, 23, 42, 0.08);
+  --mm-radius: 14px;
+  --mm-radius-sm: 10px;
+  --mm-radius-lg: 18px;
+  --mm-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --mm-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.08), 0 16px 40px rgba(12, 142, 230, 0.12);
+  --mm-header-height: 64px;
+  --mm-sidebar-width: 240px;
+  --mm-transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--mm-text);
+  background: var(--mm-bg);
+  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── 布局壳层 ── */
+.mm-layout {
+  min-height: 100vh;
+  background: var(--mm-bg);
+}
+
+.mm-sider {
+  background: linear-gradient(180deg, #0b1120 0%, #111827 55%, #0f172a 100%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 20;
+}
+
+.mm-sider-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100%;
+}
+
+.mm-sider-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mm-sider.ant-layout-sider-collapsed .mm-sider-footer {
+  display: none;
+}
+
+.mm-sider .mm-menu {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mm-sider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(12, 142, 230, 0.4), transparent 40%, rgba(6, 182, 212, 0.3));
+  pointer-events: none;
+}
+
+.mm-brand {
+  height: var(--mm-header-height);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.mm-brand__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--mm-primary) 0%, var(--mm-accent) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(12, 142, 230, 0.45);
+}
+
+.mm-brand__icon svg {
+  font-size: 18px;
+  color: #fff;
+}
+
+.mm-brand__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: opacity var(--mm-transition);
+}
+
+.mm-brand__name {
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mm-brand__tagline {
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.mm-sider.ant-layout-sider-collapsed .mm-brand__text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.mm-menu.ant-menu-dark {
+  background: transparent !important;
+  border-inline-end: none !important;
+  padding: 12px 10px;
+}
+
+.mm-menu.ant-menu-dark .ant-menu-item {
+  border-radius: var(--mm-radius-sm);
+  margin: 2px 0;
+  height: 44px;
+  line-height: 44px;
+  transition: background var(--mm-transition), color var(--mm-transition), transform 0.15s ease;
+}
+
+.mm-menu.ant-menu-dark .ant-menu-item:hover {
+  background: var(--mm-sidebar-hover) !important;
+}
+
+.mm-menu.ant-menu-dark .ant-menu-item-selected {
+  background: var(--mm-sidebar-active) !important;
+  color: #7dd3fc !important;
+  font-weight: 600;
+}
+
+.mm-menu.ant-menu-dark .ant-menu-item-selected::after {
+  display: none;
+}
+
+.mm-menu.ant-menu-dark .ant-menu-item .ant-menu-item-icon {
+  font-size: 17px;
+}
+
+.mm-main {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mm-header {
+  height: var(--mm-header-height) !important;
+  line-height: var(--mm-header-height) !important;
+  padding: 0 24px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--mm-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mm-header__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mm-header__toggle {
+  color: var(--mm-text-secondary) !important;
+  border-radius: var(--mm-radius-sm) !important;
+}
+
+.mm-header__toggle:hover {
+  color: var(--mm-primary) !important;
+  background: var(--mm-primary-soft) !important;
+}
+
+.mm-header__breadcrumb {
+  color: var(--mm-text-secondary);
+  font-size: 13px;
+}
+
+.mm-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.mm-header__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--mm-bg);
+  border: 1px solid var(--mm-border);
+  font-size: 13px;
+  color: var(--mm-text-secondary);
+}
+
+.mm-header__user-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mm-success);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  animation: mm-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes mm-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.mm-content {
+  margin: 0 !important;
+  padding: 24px 28px 32px !important;
+  min-height: calc(100vh - var(--mm-header-height));
+  min-width: 0;
+  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(12, 142, 230, 0.04), transparent),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgba(6, 182, 212, 0.03), transparent),
+    var(--mm-bg);
+}
+
+.mm-content-inner {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* ── 页面通用 ── */
+.mm-page {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.mm-page > .ant-space {
+  width: 100%;
+}
+
+.mm-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.mm-page-header__title {
+  margin: 0 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.mm-page-header__desc {
+  display: block;
+  margin-top: 4px;
+  max-width: 720px;
+  line-height: 1.6;
+}
+
+/* ── 卡片与统计 ── */
+.mm-page .ant-card {
+  border: 1px solid var(--mm-border);
+  border-radius: var(--mm-radius);
+  box-shadow: var(--mm-shadow);
+  transition: box-shadow var(--mm-transition), transform var(--mm-transition), border-color var(--mm-transition);
+  overflow: hidden;
+}
+
+.mm-page .ant-card:hover {
+  box-shadow: var(--mm-shadow-hover);
+}
+
+.mm-page .ant-card-head {
+  border-bottom: 1px solid var(--mm-border);
+  min-height: 48px;
+  font-weight: 600;
+}
+
+.mm-dashboard-card .ant-card-head {
+  padding-inline: 18px;
+}
+
+.mm-dashboard-card .ant-card-head-title {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.mm-dashboard-card__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.mm-dashboard-card__note {
+  margin: 0;
+  color: var(--mm-text-secondary);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.mm-dashboard-card__centered {
+  align-items: center;
+}
+
+.mm-dashboard-card__resource-layout {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.mm-dashboard-card__resource-block {
+  text-align: center;
+}
+
+.mm-dashboard-card__resource-meta {
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.mm-dashboard-grid {
+  width: 100%;
+}
+
+.mm-dashboard-grid .ant-col {
+  display: flex;
+}
+
+.mm-dashboard-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mm-dashboard-card .ant-card-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.mm-dashboard-card--metric {
+  height: 140px;
+  min-height: 140px;
+}
+
+.mm-dashboard-card--metric .ant-card-body {
+  align-items: center;
+  justify-content: center;
+  padding: 20px 22px;
+}
+
+.mm-dashboard-card--metric .mm-dashboard-card__metric-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.mm-dashboard-card--metric .ant-statistic {
+  width: 100%;
+}
+
+.mm-dashboard-card--metric .ant-statistic-title {
+  color: var(--mm-text-secondary);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.mm-dashboard-card--metric .ant-statistic-content {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mm-dashboard-card--metric .ant-statistic-content-value {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.mm-dashboard-card--panel {
+  min-height: 220px;
+}
+
+.mm-dashboard-card--panel .ant-card-body {
+  align-items: center;
+  justify-content: center;
+  padding: 20px 22px;
+}
+
+.mm-dashboard-card--panel .mm-dashboard-card__panel-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.mm-dashboard-card--panel .ant-statistic-title {
+  color: var(--mm-text-secondary);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.mm-dashboard-card--panel .ant-statistic-content-value {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.mm-dashboard-card--panel .ant-space {
+  width: 100%;
+}
+
+.mm-dashboard-card--panel .ant-space-item {
+  width: 100%;
+}
+
+.mm-dashboard-card--panel .ant-typography {
+  margin-bottom: 0;
+}
+
+.mm-dashboard-card--table {
+  min-height: 0;
+}
+
+.mm-dashboard-card--table .ant-card-body {
+  padding: 16px 18px 18px;
+  align-items: stretch;
+}
+
+.mm-dashboard-card--table .ant-table-wrapper {
+  margin: 0;
+}
+
+.mm-dashboard-card--table .ant-table-container {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.mm-panel-card .ant-card-head-title {
+  font-size: 15px;
+}
+
+@media (max-width: 991px) {
+  .mm-dashboard-card--metric {
+    height: 140px;
+  }
+}
+
+/* ── 表格 ── */
+.mm-page .ant-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.mm-page .ant-table {
+  border-radius: var(--mm-radius-sm);
+}
+
+.mm-page .ant-table-thead > tr > th {
+  background: #f8fafc !important;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--mm-text-secondary);
+  border-bottom: 1px solid var(--mm-border) !important;
+}
+
+.mm-page .ant-table-tbody > tr {
+  transition: background 0.15s ease;
+}
+
+.mm-page .ant-table-tbody > tr:hover > td {
+  background: rgba(12, 142, 230, 0.04) !important;
+}
+
+.mm-page .ant-table-tbody > tr.mm-table-row--clickable {
+  cursor: pointer;
+}
+
+/* ── 按钮与表单 ── */
+.mm-page .ant-btn-primary {
+  box-shadow: 0 2px 8px rgba(12, 142, 230, 0.3);
+}
+
+.mm-page .ant-input,
+.mm-page .ant-input-affix-wrapper,
+.mm-page .ant-select-selector,
+.mm-page .ant-picker {
+  border-radius: var(--mm-radius-sm) !important;
+}
+
+.mm-page .ant-collapse {
+  border-radius: var(--mm-radius);
+  border: 1px solid var(--mm-border);
+  overflow: hidden;
+  background: var(--mm-surface);
+}
+
+.mm-page .ant-collapse-header {
+  font-weight: 600;
+}
+
+/* ── 健康指示点 ── */
+.mm-health-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.mm-health-dot--online {
+  background: var(--mm-success);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.55);
+  animation: mm-pulse 2s ease-in-out infinite;
+}
+
+.mm-health-dot--offline {
+  background: var(--mm-danger);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+/* ── 告警横幅 ── */
+.mm-alert-banner.ant-alert {
+  border-radius: var(--mm-radius);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ── 登录页 ── */
+.mm-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse 120% 80% at 20% 0%, rgba(12, 142, 230, 0.25), transparent 50%),
+    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(6, 182, 212, 0.2), transparent 50%),
+    linear-gradient(145deg, #0b1120 0%, #0f2744 45%, #0c4a6e 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.mm-login::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.mm-login__card {
+  width: 100%;
+  max-width: 440px;
+  border-radius: var(--mm-radius-lg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.35) !important;
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 1;
+}
+
+.mm-login__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.mm-login__logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--mm-primary), var(--mm-accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(12, 142, 230, 0.4);
+}
+
+.mm-login__logo svg {
+  font-size: 24px;
+  color: #fff;
+}
+
+/* ── 启动门控 ── */
+.mm-boot-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--mm-bg);
+}
+
+.mm-boot-gate__card {
+  width: 100%;
+  max-width: 480px;
+  border-radius: var(--mm-radius-lg) !important;
+  box-shadow: var(--mm-shadow) !important;
+}
+
+/* ── 数据中心导出卡片 ── */
+.mm-export-card {
+  height: 100%;
+  text-align: center;
+  transition: transform var(--mm-transition), box-shadow var(--mm-transition);
+}
+
+.mm-export-card:hover {
+  transform: translateY(-3px);
+}
+
+.mm-export-card .anticon {
+  font-size: 32px;
+  color: var(--mm-primary);
+  margin-bottom: 12px;
+}
+
+/* ── 任务详情驾驶舱 ── */
+.mm-task-detail.task-cockpit {
+  --cockpit-gap: 10px;
+  --cockpit-radius: var(--mm-radius-sm);
+  --cockpit-border: 1px solid var(--mm-border);
+  --cockpit-bg: var(--mm-surface);
+}
+
+/* ── 响应式 ── */
+@media (max-width: 768px) {
+  .mm-content {
+    padding: 16px !important;
+  }
+
+  .mm-header {
+    padding: 0 12px !important;
+  }
+
+  .mm-header__breadcrumb {
+    display: none;
+  }
+}

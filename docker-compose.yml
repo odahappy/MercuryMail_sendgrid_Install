@@ -1,0 +1,213 @@
+# MercuryMail Docker Compose（宪法 v13.1）
+#
+# 服务名对照（容器间 DNS 使用 services 键名）：
+#   mercury-mail-app  → 后端 API，容器内 8000，宿主机 8000
+#   frontend          → Nginx 静态页 + /api 反代，容器内 80，宿主机 FRONTEND_HTTP_PORT(默认 80)
+#   db                → PostgreSQL（DATABASE_URL 中主机名 db）
+#   redis             → Redis（REDIS_URL 中主机名 redis）
+#
+# 前端 Nginx 上游：mercury-mail-app:8000（见 frontend/nginx.conf，运行期 Docker DNS 解析）
+# 前端镜像 build context 为项目根目录 .，dockerfile 为 ./frontend/Dockerfile
+services:
+  mercury-mail-app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        APP_GIT_SHA: ${APP_GIT_SHA:-unknown}
+        APP_IMAGE_DIGEST: ${APP_IMAGE_DIGEST:-local-build}
+    container_name: mercury-mail-app
+    restart: unless-stopped
+    mem_limit: 6g
+    cpus: "6.0"
+    ports:
+      - "127.0.0.1:8000:8000"
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    environment:
+      APP_GIT_SHA: ${APP_GIT_SHA:-unknown}
+      APP_IMAGE_DIGEST: ${APP_IMAGE_DIGEST:-local-build}
+      DATABASE_URL: ${DATABASE_URL:?请先在 .env 中设置 DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:?请先在 .env 中设置 REDIS_URL}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?请先在 .env 中设置 ENCRYPTION_KEY}
+      SECRET_KEY: ${SECRET_KEY:?请先在 .env 中设置 SECRET_KEY，至少 32 字符}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      RESET_ADMIN_PASSWORD: ${RESET_ADMIN_PASSWORD:-false}
+      SUPERADMIN_USERNAME: ${SUPERADMIN_USERNAME:-${SUPER_ADMIN_USERNAME:-superadmin}}
+      ESTIMATED_PROXY_RTT_SECONDS: ${ESTIMATED_PROXY_RTT_SECONDS:-1.0}
+      ALLOW_PARALLEL_TASKS_PER_CHANNEL: ${ALLOW_PARALLEL_TASKS_PER_CHANNEL:-true}
+      SENDER_POOL_WORKERS: ${SENDER_POOL_WORKERS:-64}
+      SENDER_POOL_MAX_WORKERS: ${SENDER_POOL_MAX_WORKERS:-128}
+      TASK_HTTP_BATCH_CONCURRENCY_CAP: ${TASK_HTTP_BATCH_CONCURRENCY_CAP:-128}
+      TASK_STATUS_LOG_INTERVAL: ${TASK_STATUS_LOG_INTERVAL:-30}
+      REDIS_MAX_CONNECTIONS: ${REDIS_MAX_CONNECTIONS:-128}
+      REDIS_LOCK_MAX_CONNECTIONS: ${REDIS_LOCK_MAX_CONNECTIONS:-128}
+      REDIS_BACKGROUND_MAX_CONNECTIONS: ${REDIS_BACKGROUND_MAX_CONNECTIONS:-128}
+      REDIS_SOCKET_TIMEOUT_SECONDS: ${REDIS_SOCKET_TIMEOUT_SECONDS:-5}
+      REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS: ${REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS:-5}
+      REDIS_HEALTH_CHECK_INTERVAL_SECONDS: ${REDIS_HEALTH_CHECK_INTERVAL_SECONDS:-30}
+      WRITER_MAX_FLUSHES_PER_SECOND: ${WRITER_MAX_FLUSHES_PER_SECOND:-20}
+      WRITER_MAX_CONCURRENT_FLUSHES: ${WRITER_MAX_CONCURRENT_FLUSHES:-8}
+      GC_GENERATION0_THRESHOLD: ${GC_GENERATION0_THRESHOLD:-50000}
+      ENABLE_PID_CONCURRENCY_TUNING: ${ENABLE_PID_CONCURRENCY_TUNING:-true}
+      ENABLE_FEEDFORWARD_CONCURRENCY: ${ENABLE_FEEDFORWARD_CONCURRENCY:-true}
+      ENABLE_QUEUE_AWARE_CONCURRENCY: ${ENABLE_QUEUE_AWARE_CONCURRENCY:-true}
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-single}
+      SEND_EMAIL_TIMEOUT_SECONDS: ${SEND_EMAIL_TIMEOUT_SECONDS:-30}
+      WRITER_BATCH_SIZE: ${WRITER_BATCH_SIZE:-300}
+      WRITER_TURBO_BATCH_SIZE: ${WRITER_TURBO_BATCH_SIZE:-1000}
+      IMPORT_PREPROCESS_WORKERS: ${IMPORT_PREPROCESS_WORKERS:-4}
+      SCHEDULED_START_RETRY_INTERVAL_SECONDS: ${SCHEDULED_START_RETRY_INTERVAL_SECONDS:-60}
+      SCHEDULED_START_RETRY_MAX_ATTEMPTS: ${SCHEDULED_START_RETRY_MAX_ATTEMPTS:-3}
+      EXPORT_ASYNC_ROW_THRESHOLD: ${EXPORT_ASYNC_ROW_THRESHOLD:-5000000}
+      EXPORT_ASYNC_DIR: ${EXPORT_ASYNC_DIR:-/tmp/mercury_exports}
+      EXPORT_ASYNC_MAX_TASKS: ${EXPORT_ASYNC_MAX_TASKS:-3}
+      EXPORT_ASYNC_FILE_TTL_HOURS: ${EXPORT_ASYNC_FILE_TTL_HOURS:-24}
+      PERF_DEBUG: ${PERF_DEBUG:-false}
+      DEBUG_SEND_LOG_VARIABLES: ${DEBUG_SEND_LOG_VARIABLES:-false}
+      HOT_RETENTION_DAYS: ${HOT_RETENTION_DAYS:-3}
+      ARCHIVE_RETENTION_DAYS: ${ARCHIVE_RETENTION_DAYS:-30}
+      LOST_EVENT_RETENTION_DAYS: ${LOST_EVENT_RETENTION_DAYS:-14}
+      CLEAN_SOURCE_AFTER_DEPLOY: ${CLEAN_SOURCE_AFTER_DEPLOY:-true}
+      SENDGRID_DAILY_QUOTA: ${SENDGRID_DAILY_QUOTA:-0}
+      SENDGRID_WEBHOOK_VERIFICATION_KEY: ${SENDGRID_WEBHOOK_VERIFICATION_KEY:-}
+      APP_ENV: ${APP_ENV:-production}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?请先在 .env 中设置 PUBLIC_BASE_URL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-60}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+      POSTGRES_MAX_CONNECTIONS: ${POSTGRES_MAX_CONNECTIONS:-300}
+      DEFAULT_HTTP_BATCH_SIZE: ${DEFAULT_HTTP_BATCH_SIZE:-100}
+      WARMUP_DEFAULT_HTTP_BATCH_SIZE: ${WARMUP_DEFAULT_HTTP_BATCH_SIZE:-20}
+      POLL_INTERVAL_SECONDS: ${POLL_INTERVAL_SECONDS:-120}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-720}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1/chat/completions}
+      ENABLE_SENDGRID_KEEPALIVE: ${ENABLE_SENDGRID_KEEPALIVE:-true}
+      ENABLE_SENDGRID_HTTP2: ${ENABLE_SENDGRID_HTTP2:-true}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-sS", "http://127.0.0.1:8000/api/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 180s
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - mercury-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: mercury-mail-frontend
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    ports:
+      - "0.0.0.0:${FRONTEND_HTTP_PORT:-80}:80"
+    depends_on:
+      mercury-mail-app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - mercury-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: mercury-mail-redis
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: "0.5"
+    command: sh -c "if [ -n \"$$REDIS_PASSWORD\" ]; then exec redis-server --appendonly yes --save 60 1000 --maxmemory 256mb --maxmemory-policy allkeys-lru --tcp-keepalive 30 --timeout 0 --requirepass \"$$REDIS_PASSWORD\"; else exec redis-server --appendonly yes --save 60 1000 --maxmemory 256mb --maxmemory-policy allkeys-lru --tcp-keepalive 30 --timeout 0; fi"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "if [ -n \"$REDIS_PASSWORD\" ]; then redis-cli -a \"$REDIS_PASSWORD\" ping; else redis-cli ping; fi"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - mercury-network
+
+  db:
+    image: postgres:15-alpine
+    container_name: mercury-mail-db
+    restart: unless-stopped
+    mem_limit: 10g
+    cpus: "10.0"
+    shm_size: 1g
+    command: >
+      postgres
+      -c max_connections=600
+      -c shared_buffers=4GB
+      -c effective_cache_size=10GB
+      -c maintenance_work_mem=1GB
+      -c work_mem=64MB
+      -c autovacuum_work_mem=256MB
+      -c wal_buffers=64MB
+      -c min_wal_size=2GB
+      -c max_wal_size=8GB
+      -c checkpoint_timeout=15min
+      -c checkpoint_completion_target=0.9
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c default_statistics_target=200
+      -c max_parallel_workers_per_gather=4
+      -c max_worker_processes=16
+      -c max_parallel_workers=12
+      -c autovacuum_max_workers=6
+      -c autovacuum_naptime=10s
+      -c log_checkpoints=on
+      -c wal_compression=on
+      -c autovacuum_vacuum_scale_factor=0.02
+      -c autovacuum_analyze_scale_factor=0.005
+      -c autovacuum_analyze_threshold=500
+      -c autovacuum_vacuum_cost_limit=4000
+      -c autovacuum_vacuum_cost_delay=2ms
+      -c log_temp_files=104857600
+      -c track_io_timing=on
+    environment:
+      POSTGRES_USER: mercury
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请先在 .env 中设置 POSTGRES_PASSWORD}
+      POSTGRES_DB: mercurymail
+      PG_ADMIN_USER: ${PG_ADMIN_USER:-admin}
+      PG_ADMIN_PASSWORD: ${PG_ADMIN_PASSWORD:?请先在 .env 中设置 PG_ADMIN_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-admin.sh:/docker-entrypoint-initdb.d/init-admin.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mercury -d mercurymail"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks:
+      - mercury-network
+
+networks:
+  mercury-network:
+    name: mercury-network
+    driver: bridge
+
+volumes:
+  redis_data:
+  pgdata:
